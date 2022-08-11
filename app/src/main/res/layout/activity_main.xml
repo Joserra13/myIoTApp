@@ -16,7 +16,7 @@
         android:paddingTop="20dp">
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="@font/ubuntu_medium"
@@ -29,7 +29,6 @@
     </LinearLayout>
 
     <GridLayout
-
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:alignmentMode="alignBounds"
@@ -344,5 +343,11 @@
         </LinearLayout>
 
     </GridLayout>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TextView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
