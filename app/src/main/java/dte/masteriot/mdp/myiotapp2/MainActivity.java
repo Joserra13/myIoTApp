@@ -1,6 +1,7 @@
 package dte.masteriot.mdp.myiotapp2;
 
 import static android.widget.Toast.LENGTH_LONG;
+import static android.widget.Toast.LENGTH_SHORT;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 // true if the switch is in the On position
 
                 webSocket.send(String.valueOf(isChecked));
-                Toast.makeText(getApplicationContext(), "Msg sent!", LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Msg sent!", LENGTH_SHORT).show();
             }
         });
 
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void run() {
-                    Toast.makeText(activity, "Connection Established!", LENGTH_LONG).show();
+                    Toast.makeText(activity, "Connection Established!", LENGTH_SHORT).show();
                 }
             });
         }
