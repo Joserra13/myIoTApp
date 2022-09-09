@@ -16,6 +16,8 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -29,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView title;
     Switch alarmSwitch;
+    Switch windowSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         title = findViewById(R.id.textView);
         alarmSwitch = findViewById(R.id.switch1);
+        windowSwitch = findViewById(R.id.switch2);
 
         instantiateWebSocket();
 
@@ -45,7 +49,21 @@ public class MainActivity extends AppCompatActivity {
                 // do something, the isChecked will be
                 // true if the switch is in the On position
 
-                webSocket.send(String.valueOf(isChecked));
+                String msg = "A " + String.valueOf(isChecked);
+
+                webSocket.send(msg);
+                Toast.makeText(getApplicationContext(), "Msg sent!", LENGTH_SHORT).show();
+            }
+        });
+
+        windowSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                String msg = "W " + String.valueOf(isChecked);
+
+                webSocket.send(msg);
                 Toast.makeText(getApplicationContext(), "Msg sent!", LENGTH_SHORT).show();
             }
         });
@@ -57,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient();
 
         //replace x.x.x.x with your machine's IP Address
-        Request request = new Request.Builder().url("ws://192.168.1.58:8080").build();
+        Request request = new Request.Builder().url("ws://192.168.1.92:8080").build();
         SocketListener socketListener = new SocketListener(this);
         webSocket = client.newWebSocket(request, socketListener);
     }
