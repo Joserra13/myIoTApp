@@ -1,13 +1,12 @@
 package dte.masteriot.mdp.myiotapp2;
 
-import static android.widget.Toast.LENGTH_LONG;
 import static android.widget.Toast.LENGTH_SHORT;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -15,8 +14,6 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.lang.reflect.Array;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -30,8 +27,20 @@ public class MainActivity extends AppCompatActivity {
     private WebSocket webSocket;
 
     TextView title;
+    TextView nDetectTV;
+    TextView gasTV;
+    TextView temperatureTV;
+    TextView humidityTV;
     Switch alarmSwitch;
     Switch windowSwitch;
+
+    Handler handler = new Handler();
+    Runnable runnable;
+    int delay = 1000;
+
+    int i = 0;
+
+    boolean aux = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         title = findViewById(R.id.textView);
+        nDetectTV = findViewById(R.id.textView3);
+        gasTV = findViewById(R.id.textView14);
+        humidityTV = findViewById(R.id.textView12);
+        temperatureTV = findViewById(R.id.textView9);
         alarmSwitch = findViewById(R.id.switch1);
         windowSwitch = findViewById(R.id.switch2);
 
@@ -63,11 +76,34 @@ public class MainActivity extends AppCompatActivity {
 
                 String msg = "W " + String.valueOf(isChecked);
 
-                webSocket.send(msg);
-                Toast.makeText(getApplicationContext(), "Msg sent!", LENGTH_SHORT).show();
+                if(!aux) {
+                    webSocket.send(msg);
+                    Toast.makeText(getApplicationContext(), "Msg sent!", LENGTH_SHORT).show();
+                }
             }
         });
 
+    }
+
+    @Override
+    protected void onResume() {
+        handler.postDelayed(runnable = new Runnable() {
+            public void run() {
+                handler.postDelayed(runnable, delay);
+                title.setText(String.valueOf(i));
+                i++;
+
+                String msg = "R";
+                webSocket.send(msg);
+                //Toast.makeText(MainActivity.this, "This method is run every 10 seconds", Toast.LENGTH_SHORT).show();
+            }
+        }, delay);
+        super.onResume();
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacks(runnable); //stop handler when activity not visible super.onPause();
     }
 
     private void instantiateWebSocket() {
@@ -103,21 +139,58 @@ public class MainActivity extends AppCompatActivity {
         public void onMessage(WebSocket webSocket, final String text) {
 
             activity.runOnUiThread(new Runnable() {
+
                 @Override
                 public void run() {
 
+                    //Toast.makeText(activity, "Message received!", LENGTH_SHORT).show();
+
                     title.setText(text);
 
-                    JSONObject jsonObject = new JSONObject();
+                    JSONObject json_obj = null;
+                    int stateAlarm = 0;
+                    int nDetections = 32202;
+                    int gasValue = 32202;
+                    int windowIsOpen = 0;
+                    double temp = 3220.2;
+                    double hum = 3220.2;
 
                     try {
+                        json_obj = new JSONObject(text);
 
-                        jsonObject.put("message", text);
-                        jsonObject.put("byServer", true);
+                        stateAlarm = json_obj.getInt("stateAlarm");
+                        nDetections = json_obj.getInt("nDetections");
+                        gasValue = json_obj.getInt("gasValue");
+                        windowIsOpen = json_obj.getInt("windowIsOpen");
+                        temp = json_obj.getDouble("temp");
+                        hum = json_obj.getDouble("hum");
+
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+
+                    if(stateAlarm == 0){
+                        alarmSwitch.setChecked(false);
+                    } else if(stateAlarm == 1){
+                        alarmSwitch.setChecked(true);
+                    }
+
+                    nDetectTV.setText(String.valueOf(nDetections));
+
+                    gasTV.setText(String.valueOf(gasValue).concat("ppm"));
+
+                    if(windowIsOpen == 0){
+                        windowSwitch.setChecked(false);
+                        aux = false;
+                    } else if(windowIsOpen == 1){
+                        windowSwitch.setChecked(true);
+                        aux = true;
+                    }
+
+                    temperatureTV.setText(String.valueOf(temp).concat("ºC"));
+                    humidityTV.setText(String.valueOf(hum).concat("%"));
+
                 }
             });
         }
@@ -135,6 +208,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClosed(WebSocket webSocket, int code, String reason) {
             super.onClosed(webSocket, code, reason);
+
+            Toast.makeText(activity, "Connection Closed!", LENGTH_SHORT).show();
         }
 
         @Override
